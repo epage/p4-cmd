@@ -1,0 +1,16 @@
+[package]
+name = "p4-cmd"
+version = "0.1.0"
+authors = ["Ed Page <eopage@gmail.com>"]
+description = "P4 API (wraps CLI)"
+license = "MIT OR Apache-2.0"
+repository = ""
+homepage = ""
+documentation = "http://docs.rs/escargot/"
+readme = "README.md"
+categories = ["development-tools", "api-bindings"]
+keywords = ["p4", "perforce"]
+
+[dependencies]
+chrono = "0.4"
+nom = "4.0"
