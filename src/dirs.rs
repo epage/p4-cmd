@@ -30,7 +30,7 @@ use p4;
 #[derive(Debug, Clone)]
 pub struct Dirs<'p, 'f, 's> {
     connection: &'p p4::P4,
-    dir: &'f str,
+    dir: Vec<&'f str>,
 
     client_only: bool,
     stream: Option<&'s str>,
@@ -43,13 +43,18 @@ impl<'p, 'f, 's> Dirs<'p, 'f, 's> {
     pub fn new(connection: &'p p4::P4, dir: &'f str) -> Self {
         Self {
             connection: connection,
-            dir: dir,
+            dir: vec![dir],
             client_only: false,
             stream: None,
             include_deleted: false,
             include_synced: false,
             ignore_case: false,
         }
+    }
+
+    pub fn dir(mut self, dir: &'f str)-> Self {
+        self.dir.push(dir);
+        self
     }
 
     /// The -C flag lists only directories that fall within the current
@@ -106,7 +111,9 @@ impl<'p, 'f, 's> Dirs<'p, 'f, 's> {
         if self.ignore_case {
             cmd.arg("-i");
         }
-        cmd.arg(self.dir);
+        for dir in self.dir {
+            cmd.arg(dir);
+        }
         let data = cmd.output().unwrap();
         let (_remains, (mut items, exit)) = dirs_parser::dirs(&data.stdout).unwrap();
         items.push(exit);

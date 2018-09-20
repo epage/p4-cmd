@@ -29,7 +29,7 @@ use p4;
 #[derive(Debug, Clone)]
 pub struct Files<'p, 'f> {
     connection: &'p p4::P4,
-    file: &'f str,
+    file: Vec<&'f str>,
 
     list_revisions: bool,
     syncable_only: bool,
@@ -41,12 +41,17 @@ impl<'p, 'f> Files<'p, 'f> {
     pub fn new(connection: &'p p4::P4, file: &'f str) -> Self {
         Self {
             connection: connection,
-            file: file,
+            file: vec![file],
             list_revisions: false,
             syncable_only: false,
             ignore_case: false,
             max: None,
         }
+    }
+
+    pub fn file(mut self, file: &'f str)-> Self {
+        self.file.push(file);
+        self
     }
 
     /// The -a flag displays all revisions within the specific range, rather
@@ -93,7 +98,9 @@ impl<'p, 'f> Files<'p, 'f> {
         if let Some(max) = self.max {
             cmd.arg(format!("-m {}", max));
         }
-        cmd.arg(self.file);
+        for file in self.file {
+            cmd.arg(file);
+        }
         let data = cmd.output().unwrap();
         let (_remains, (mut items, exit)) = files_parser::files(&data.stdout).unwrap();
         items.push(exit);
