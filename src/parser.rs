@@ -4,6 +4,8 @@ use std::str;
 
 use nom;
 
+use error;
+
 fn is_newline(c: u8) -> bool {
     let c = char::from_u32(c as u32);
     c.map(|c| c == '\n' || c == '\r').unwrap_or(false)
@@ -37,6 +39,21 @@ fn str_from_bytes(input: &[u8]) -> Result<&str, str::Utf8Error> {
     let input = str::from_utf8(input)?;
 
     Ok(input)
+}
+
+pub fn error_to_item<T>(e: Error) -> error::Item<T> {
+    error::Item::Message(error::Message::new(
+        error::MessageLevel::Error,
+        e.msg.to_owned(),
+    ))
+}
+
+pub fn exit_to_item<T>(e: Exit) -> error::Item<T> {
+    error::Item::Error(error::OperationError::new(e.code))
+}
+
+pub fn data_to_item<T>(d: T) -> error::Item<T> {
+    error::Item::Data(d)
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]

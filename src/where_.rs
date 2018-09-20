@@ -112,24 +112,9 @@ mod where_parser {
         )
     );
 
-    fn file_to_item(f: File) -> FileItem {
-        error::Item::Data(f)
-    }
-
-    fn error_to_item<T>(e: Error) -> error::Item<T> {
-        error::Item::Message(error::Message::new(
-            error::MessageLevel::Error,
-            e.msg.to_owned(),
-        ))
-    }
-
-    fn exit_to_item<T>(e: Exit) -> error::Item<T> {
-        error::Item::Error(error::OperationError::new(e.code))
-    }
-
     named!(item<&[u8], FileItem>,
         alt!(
-            map!(file, file_to_item) |
+            map!(file, data_to_item) |
             map!(error, error_to_item)
         )
     );
