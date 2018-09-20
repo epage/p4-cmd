@@ -139,10 +139,10 @@ impl P4 {
             cmd.args(&["-p", port.as_str()]);
         }
         if let Some(ref user) = self.user {
-            cmd.args(&["-c", user.as_str()]);
+            cmd.args(&["-u", user.as_str()]);
         }
         if let Some(ref password) = self.password {
-            cmd.args(&["-c", password.as_str()]);
+            cmd.args(&["-P", password.as_str()]);
         }
         if let Some(ref client) = self.client {
             cmd.args(&["-c", client.as_str()]);
