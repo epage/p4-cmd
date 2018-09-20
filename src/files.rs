@@ -87,6 +87,9 @@ impl<'p, 'f> Files<'p, 'f> {
         if self.syncable_only {
             cmd.arg("-e");
         }
+        if self.ignore_case {
+            cmd.arg("-i");
+        }
         if let Some(max) = self.max {
             cmd.arg(format!("-m {}", max));
         }
