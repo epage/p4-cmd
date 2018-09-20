@@ -1,3 +1,4 @@
+use std::path;
 use std::vec;
 
 use error;
@@ -87,7 +88,7 @@ impl Iterator for FileIter {
 pub struct File {
     pub depot_file: String,
     pub client_file: String,
-    pub path: String,
+    pub path: path::PathBuf,
     non_exhaustive: (),
 }
 
@@ -105,7 +106,7 @@ mod where_parser {
                 File {
                     depot_file: depot_file.path.to_owned(),
                     client_file: client_file.path.to_owned(),
-                    path: path.path.to_owned(),
+                    path: path::PathBuf::from(path.path),
                     non_exhaustive: (),
                 }
             )
