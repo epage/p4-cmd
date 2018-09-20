@@ -8,3 +8,4 @@ mod parser;
 pub use p4::*;
 pub mod error;
 pub mod files;
+pub mod where_;

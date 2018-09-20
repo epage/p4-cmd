@@ -165,7 +165,10 @@ mod files_parser {
     }
 
     fn error_to_item<T>(e: Error) -> error::Item<T> {
-        error::Item::Message(error::Message::new(error::MessageLevel::Error, e.msg.to_owned()))
+        error::Item::Message(error::Message::new(
+            error::MessageLevel::Error,
+            e.msg.to_owned(),
+        ))
     }
 
     fn exit_to_item<T>(e: Exit) -> error::Item<T> {

@@ -6,6 +6,7 @@ use chrono;
 use chrono::TimeZone;
 
 use files;
+use where_;
 
 #[derive(Clone, Debug)]
 pub struct P4 {
@@ -74,6 +75,32 @@ impl P4 {
     /// ```
     pub fn files<'p, 'f>(&'p self, file: &'f str) -> files::Files<'p, 'f> {
         files::Files::new(self, file)
+    }
+
+    /// Show how file names are mapped by the client view
+    ///
+    /// Where shows how the specified files are mapped by the client view.
+    /// For each argument, three names are produced: the name in the depot,
+    /// the name on the client in Perforce syntax, and the name on the client
+    /// in local syntax.
+    ///
+    /// If the file parameter is omitted, the mapping for all files in the
+    /// current directory and below) is returned.
+    ///
+    /// Note that 'p4 where' does not determine where any real files reside.
+    /// It only displays the locations that are mapped by the client view.
+    ///
+    /// # Examples
+    ///
+    /// ```rust,no_run
+    /// let p4 = p4_cmd::P4::new();
+    /// let files = p4.where_().file("//depot/dir/*").run();
+    /// for file in files {
+    ///     println!("{:?}", file);
+    /// }
+    /// ```
+    pub fn where_<'p, 'f>(&'p self) -> where_::Where<'p, 'f> {
+        where_::Where::new(self)
     }
 
     pub(crate) fn connect(&self) -> process::Command {
@@ -159,9 +186,9 @@ impl fmt::Display for Action {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let value = match self {
             Action::Add => "add",
-            Action::Edit=> "edit",
-            Action::Delete=> "delete",
-            Action::Branch=> "branch",
+            Action::Edit => "edit",
+            Action::Delete => "delete",
+            Action::Branch => "branch",
             Action::MoveAdd => "move/add",
             Action::MoveDelete => "move/delete",
             Action::Integrate => "integrate",

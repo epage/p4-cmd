@@ -95,6 +95,34 @@ named!(pub depot_file<&[u8], DepotFile>,
     map_res!(terminated!(preceded!(tag!(b"info1: depotFile "), take_till!(is_newline)), newline), depot_file_from_bytes)
 );
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ClientFile<'a> {
+    pub(crate) path: &'a str,
+}
+
+fn client_file_from_bytes(input: &[u8]) -> Result<ClientFile, str::Utf8Error> {
+    let path = str_from_bytes(input)?;
+    Ok(ClientFile { path })
+}
+
+named!(pub client_file<&[u8], ClientFile>,
+    map_res!(terminated!(preceded!(tag!(b"info1: clientFile "), take_till!(is_newline)), newline), client_file_from_bytes)
+);
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Path<'a> {
+    pub(crate) path: &'a str,
+}
+
+fn path_from_bytes(input: &[u8]) -> Result<Path, str::Utf8Error> {
+    let path = str_from_bytes(input)?;
+    Ok(Path { path })
+}
+
+named!(pub path<&[u8], Path>,
+    map_res!(terminated!(preceded!(tag!(b"info1: path "), take_till!(is_newline)), newline), path_from_bytes)
+);
+
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct Rev {
     pub(crate) rev: usize,
@@ -178,13 +206,19 @@ mod test {
     #[test]
     fn parse_exit_success() {
         let expected_remaining: &[u8] = b"";
-        assert_eq!(exit(b"exit: 0\n"), Ok((expected_remaining, Exit { code: 0 })));
+        assert_eq!(
+            exit(b"exit: 0\n"),
+            Ok((expected_remaining, Exit { code: 0 }))
+        );
     }
 
     #[test]
     fn parse_exit_positive() {
         let expected_remaining: &[u8] = b"";
-        assert_eq!(exit(b"exit: 1\n"), Ok((expected_remaining, Exit { code: 1 })));
+        assert_eq!(
+            exit(b"exit: 1\n"),
+            Ok((expected_remaining, Exit { code: 1 }))
+        );
     }
 
     #[test]
@@ -192,7 +226,12 @@ mod test {
         let expected_remaining: &[u8] = b"";
         assert_eq!(
             error(b"error: .tags - no such file(s).\n"),
-            Ok((expected_remaining, Error { msg: ".tags - no such file(s)." } ))
+            Ok((
+                expected_remaining,
+                Error {
+                    msg: ".tags - no such file(s)."
+                }
+            ))
         );
     }
 
@@ -201,14 +240,50 @@ mod test {
         let expected_remaining: &[u8] = b"";
         assert_eq!(
             depot_file(b"info1: depotFile //depot/dir/file\n"),
-            Ok((expected_remaining, DepotFile { path: "//depot/dir/file" } ))
+            Ok((
+                expected_remaining,
+                DepotFile {
+                    path: "//depot/dir/file"
+                }
+            ))
+        );
+    }
+
+    #[test]
+    fn parse_client_file() {
+        let expected_remaining: &[u8] = b"";
+        assert_eq!(
+            client_file(b"info1: clientFile //client/depot/dir/file\n"),
+            Ok((
+                expected_remaining,
+                ClientFile {
+                    path: "//client/depot/dir/file"
+                }
+            ))
+        );
+    }
+
+    #[test]
+    fn parse_path() {
+        let expected_remaining: &[u8] = b"";
+        assert_eq!(
+            path(b"info1: path /home/user/depot/dir/file\n"),
+            Ok((
+                expected_remaining,
+                Path {
+                    path: "/home/user/depot/dir/file"
+                }
+            ))
         );
     }
 
     #[test]
     fn parse_rev() {
         let expected_remaining: &[u8] = b"";
-        assert_eq!(rev(b"info1: rev 42\n"), Ok((expected_remaining, Rev { rev: 42 } )));
+        assert_eq!(
+            rev(b"info1: rev 42\n"),
+            Ok((expected_remaining, Rev { rev: 42 }))
+        );
     }
 
     #[test]
@@ -234,7 +309,7 @@ mod test {
         let expected_remaining: &[u8] = b"";
         assert_eq!(
             file_type(b"info1: type text\n"),
-            Ok((expected_remaining, FileType { ft: "text" } ))
+            Ok((expected_remaining, FileType { ft: "text" }))
         );
     }
 }
