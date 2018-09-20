@@ -140,6 +140,20 @@ named!(pub path<&[u8], Path>,
     map_res!(terminated!(preceded!(tag!(b"info1: path "), take_till!(is_newline)), newline), path_from_bytes)
 );
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Dir<'a> {
+    pub(crate) dir: &'a str,
+}
+
+fn dir_from_bytes(input: &[u8]) -> Result<Dir, str::Utf8Error> {
+    let dir = str_from_bytes(input)?;
+    Ok(Dir { dir })
+}
+
+named!(pub dir<&[u8], Dir>,
+    map_res!(terminated!(preceded!(tag!(b"info1: dir "), take_till!(is_newline)), newline), dir_from_bytes)
+);
+
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct Rev {
     pub(crate) rev: usize,
@@ -291,6 +305,15 @@ mod test {
                     path: "/home/user/depot/dir/file"
                 }
             ))
+        );
+    }
+
+    #[test]
+    fn parse_dir() {
+        let expected_remaining: &[u8] = b"";
+        assert_eq!(
+            dir(b"info1: dir //depot/dir\n"),
+            Ok((expected_remaining, Dir { dir: "//depot/dir" }))
         );
     }
 

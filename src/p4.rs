@@ -5,6 +5,7 @@ use std::str;
 use chrono;
 use chrono::TimeZone;
 
+use dirs;
 use files;
 use where_;
 
@@ -75,6 +76,34 @@ impl P4 {
     /// ```
     pub fn files<'p, 'f>(&'p self, file: &'f str) -> files::Files<'p, 'f> {
         files::Files::new(self, file)
+    }
+
+    /// List depot subdirectories
+    ///
+    /// List directories that match the specified file pattern (dir).
+    /// This command does not support the recursive wildcard (...).
+    /// Use the * wildcard instead.
+    ///
+    /// Perforce does not track directories individually. A path is treated
+    /// as a directory if there are any undeleted files with that path as a
+    /// prefix.
+    ///
+    /// By default, all directories containing files are listed. If the dir
+    /// argument includes a revision range, only directories containing files
+    /// in the range are listed. For details about specifying file revisions,
+    /// see 'p4 help revisions'.
+    ///
+    /// # Examples
+    ///
+    /// ```rust,no_run
+    /// let p4 = p4_cmd::P4::new();
+    /// let dirs = p4.dirs("//depot/dir/*").run();
+    /// for dir in dirs {
+    ///     println!("{:?}", dir);
+    /// }
+    /// ```
+    pub fn dirs<'p, 'f, 's>(&'p self, dir: &'f str) -> dirs::Dirs<'p, 'f, 's> {
+        dirs::Dirs::new(self, dir)
     }
 
     /// Show how file names are mapped by the client view
