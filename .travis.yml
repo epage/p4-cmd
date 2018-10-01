@@ -1,0 +1,80 @@
+sudo: false
+language: rust
+rust:
+- 1.22.0  # Oldest supported version
+- stable
+- beta
+- nightly
+matrix:
+  include:
+  - env: RUSTFMT
+    rust: 1.28.0  # `stable`: Locking down for consistent behavior
+    install:
+      - rustup component add rustfmt-preview
+    script:
+      - cargo fmt -- --check
+  - env: RUSTFLAGS="-D warnings"
+    rust: 1.28.0  # `stable`: Locking down for consistent behavior
+    install:
+    script:
+    - cargo check --tests
+  - env: CLIPPY
+    rust: nightly-2018-07-17
+    install:
+      - rustup component add clippy-preview
+    script:
+      - cargo clippy --all-features -- -D clippy
+
+env:
+  global:
+  - COVERALLS=0.0.6
+  - WHEN=0.1.0
+  - secure: FGosPYxgSM1Csyy2q/OiSW2KA7IDlIlLTODxwgszP/MIwOIMobAs5f+IqrEngEi3zKa0IPahQ3DZMZFAaNw9e1gI90ZQKpYgDQHNPeCtO0q4OV94RAjAFqhqVPxXwmNug88tm3NMokzzOafosWD8AzL7dYAx63KBpgCNZteW6CM=
+
+install:
+- rustc -Vv
+- cargo -V
+- which cargo-coveralls || travis_wait cargo install cargo-travis --force --vers $COVERALLS
+- if [[ `cargo-when --version` != *$WHEN ]] ; then travis_wait cargo install cargo-when --force --vers $WHEN; fi
+- export PATH=$HOME/.cargo/bin:$PATH
+
+script:
+- cargo check --verbose --all
+- rm -rf target/debug/deps/*p4_cmd*  # Avoid skeptic problems
+- cargo test  --verbose --all
+- cargo when --channel nightly bench --all
+- cargo when --channel stable doc --all --no-deps --all-features
+
+after_success:
+- cargo when --channel stable coveralls
+
+branches:
+  only:
+  # Release tags
+  - /^v\d+\.\d+\.\d+.*$/
+  - master
+
+addons:
+  apt:
+    packages:
+    # necessary for `cargo coveralls`
+    - libcurl4-openssl-dev
+    - libelf-dev
+    - libdw-dev
+    - binutils-dev
+    - cmake
+
+# Need to cache the whole `.cargo` directory to keep .crates.toml for
+# cargo-update to work
+cache:
+  directories:
+    - /home/travis/.cargo
+# But don't cache the cargo registry
+before_cache:
+- rm -rf $HOME/.cargo/registry
+# Travis can't cache files that are not readable by "others"
+- chmod -R a+r $HOME/.cargo
+
+notifications:
+  email:
+    on_success: never
