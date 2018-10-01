@@ -52,7 +52,7 @@ impl<'p, 'f, 's> Dirs<'p, 'f, 's> {
         }
     }
 
-    pub fn dir(mut self, dir: &'f str)-> Self {
+    pub fn dir(mut self, dir: &'f str) -> Self {
         self.dir.push(dir);
         self
     }

@@ -499,8 +499,7 @@ impl str::FromStr for FileType {
             .map(|f| {
                 let modifiers: FileTypeModifiers = f.parse()?;
                 Ok(modifiers)
-            })
-            .map_or(Ok(None), |r| r.map(Some))?;
+            }).map_or(Ok(None), |r| r.map(Some))?;
 
         let ft = FileType {
             base,

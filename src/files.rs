@@ -49,7 +49,7 @@ impl<'p, 'f> Files<'p, 'f> {
         }
     }
 
-    pub fn file(mut self, file: &'f str)-> Self {
+    pub fn file(mut self, file: &'f str) -> Self {
         self.file.push(file);
         self
     }
