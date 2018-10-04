@@ -35,7 +35,7 @@ pub struct Where<'p, 'f> {
 impl<'p, 'f> Where<'p, 'f> {
     pub fn new(connection: &'p p4::P4) -> Self {
         Self {
-            connection: connection,
+            connection,
             file: vec![],
         }
     }

@@ -173,7 +173,11 @@ impl P4 {
     }
 
     pub(crate) fn connect(&self) -> process::Command {
-        let p4_cmd = self.custom_p4.as_ref().map(path::PathBuf::as_path).unwrap_or(path::Path::new("p4"));
+        let p4_cmd = self
+            .custom_p4
+            .as_ref()
+            .map(path::PathBuf::as_path)
+            .unwrap_or_else(|| path::Path::new("p4"));
         let mut cmd = process::Command::new(p4_cmd);
         cmd.args(&["-Gs", "-C utf8"]);
         if let Some(ref port) = self.port {

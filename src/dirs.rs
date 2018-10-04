@@ -42,7 +42,7 @@ pub struct Dirs<'p, 'f, 's> {
 impl<'p, 'f, 's> Dirs<'p, 'f, 's> {
     pub fn new(connection: &'p p4::P4, dir: &'f str) -> Self {
         Self {
-            connection: connection,
+            connection,
             dir: vec![dir],
             client_only: false,
             stream: None,

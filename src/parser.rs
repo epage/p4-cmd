@@ -7,7 +7,7 @@ use nom;
 use error;
 
 fn is_newline(c: u8) -> bool {
-    let c = char::from_u32(c as u32);
+    let c = char::from_u32(u32::from(c));
     c.map(|c| c == '\n' || c == '\r').unwrap_or(false)
 }
 
@@ -84,7 +84,7 @@ named!(pub exit<&[u8], Exit>,
     map_res!(terminated!(preceded!(tag!(b"exit: "), take_while!(nom::is_digit)), newline), exit_from_bytes)
 );
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct Error<'a> {
     pub(crate) msg: &'a str,
 }

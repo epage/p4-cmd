@@ -40,7 +40,7 @@ pub struct Files<'p, 'f> {
 impl<'p, 'f> Files<'p, 'f> {
     pub fn new(connection: &'p p4::P4, file: &'f str) -> Self {
         Self {
-            connection: connection,
+            connection,
             file: vec![file],
             list_revisions: false,
             syncable_only: false,
