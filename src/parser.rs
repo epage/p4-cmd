@@ -230,6 +230,32 @@ named!(pub time<&[u8], Time>,
     map_res!(terminated!(preceded!(tag!(b"info1: time "), take_while!(nom::is_digit)), newline), time_from_bytes)
 );
 
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub struct FileSize {
+    pub(crate) size: usize,
+}
+
+fn file_size_from_bytes(input: &[u8]) -> Result<FileSize, num::ParseIntError> {
+    // nom ensured `input` is only ASCII
+    let size = unsafe { usize_from_bytes(input)? };
+
+    Ok(FileSize { size })
+}
+
+named!(pub file_size<&[u8], FileSize>,
+    map_res!(terminated!(preceded!(tag!(b"info1: fileSize "), take_while!(nom::is_digit)), newline), file_size_from_bytes)
+);
+
+fn text_from_bytes(input: &[u8]) -> Result<String, str::Utf8Error> {
+    let text = str_from_bytes(input)?.to_owned();
+
+    Ok(text)
+}
+
+named!(pub text<&[u8], String>,
+    map_res!(terminated!(preceded!(tag!(b"text: "), take_till!(is_newline)), newline), text_from_bytes)
+);
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -350,6 +376,15 @@ mod test {
         assert_eq!(
             file_type(b"info1: type text\n"),
             Ok((expected_remaining, FileType { ft: "text" }))
+        );
+    }
+
+    #[test]
+    fn parse_file_size() {
+        let expected_remaining: &[u8] = b"";
+        assert_eq!(
+            file_size(b"info1: fileSize 42\n"),
+            Ok((expected_remaining, FileSize { size: 42 }))
         );
     }
 }

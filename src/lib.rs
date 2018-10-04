@@ -9,4 +9,5 @@ pub use p4::*;
 pub mod dirs;
 pub mod error;
 pub mod files;
+pub mod print;
 pub mod where_;

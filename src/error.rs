@@ -64,3 +64,26 @@ pub enum Item<T> {
     #[doc(hidden)]
     __Nonexhaustive,
 }
+
+impl<T> Item<T> {
+    pub fn as_data(&self) -> Option<&T> {
+        match self {
+            Item::Data(t) => Some(t),
+            _ => None,
+        }
+    }
+
+    pub fn as_message(&self) -> Option<&Message> {
+        match self {
+            Item::Message(m) => Some(m),
+            _ => None,
+        }
+    }
+
+    pub fn as_error(&self) -> Option<&OperationError> {
+        match self {
+            Item::Error(e) => Some(e),
+            _ => None,
+        }
+    }
+}

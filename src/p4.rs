@@ -7,6 +7,7 @@ use chrono::TimeZone;
 
 use dirs;
 use files;
+use print;
 use where_;
 
 #[derive(Clone, Debug)]
@@ -49,6 +50,33 @@ impl P4 {
     pub fn set_client(mut self, client: Option<String>) -> Self {
         self.client = client;
         self
+    }
+
+    /// Write a depot file to standard output
+    ///
+    /// Retrieve the contents of a depot file to the client's standard output.
+    /// The file is not synced.  If file is specified using client syntax,
+    /// Perforce uses the client view to determine the corresponding depot
+    /// file.
+    ///
+    /// By default, the head revision is printed.  If the file argument
+    /// includes a revision, the specified revision is printed.  If the
+    /// file argument has a revision range,  then only files selected by
+    /// that revision range are printed, and the highest revision in the
+    /// range is printed. For details about revision specifiers, see 'p4
+    /// help revisions'.
+    ///
+    /// # Examples
+    ///
+    /// ```rust,no_run
+    /// let p4 = p4_cmd::P4::new();
+    /// let files = p4.print("//depot/dir/file").run();
+    /// for file in files {
+    ///     println!("{:?}", file);
+    /// }
+    /// ```
+    pub fn print<'p, 'f>(&'p self, file: &'f str) -> print::Print<'p, 'f> {
+        print::Print::new(self, file)
     }
 
     /// List files in the depot.
