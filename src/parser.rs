@@ -48,6 +48,13 @@ pub fn error_to_item<T>(e: Error) -> error::Item<T> {
     ))
 }
 
+pub fn info_to_item<T>(e: Info) -> error::Item<T> {
+    error::Item::Message(error::Message::new(
+        error::MessageLevel::Info,
+        e.msg.to_owned(),
+    ))
+}
+
 pub fn exit_to_item<T>(e: Exit) -> error::Item<T> {
     error::Item::Error(error::OperationError::new(e.code))
 }
@@ -96,6 +103,20 @@ fn error_from_bytes(input: &[u8]) -> Result<Error, str::Utf8Error> {
 
 named!(pub error<&[u8], Error>,
     map_res!(terminated!(preceded!(tag!(b"error: "), take_till!(is_newline)), newline), error_from_bytes)
+);
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub struct Info<'a> {
+    pub(crate) msg: &'a str,
+}
+
+fn info_from_bytes(input: &[u8]) -> Result<Info, str::Utf8Error> {
+    let msg = str_from_bytes(input)?;
+    Ok(Info { msg })
+}
+
+named!(pub info<&[u8], Info>,
+    map_res!(terminated!(preceded!(tag!(b"info: "), take_till!(is_newline)), newline), info_from_bytes)
 );
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -244,6 +265,14 @@ fn file_size_from_bytes(input: &[u8]) -> Result<FileSize, num::ParseIntError> {
 
 named!(pub file_size<&[u8], FileSize>,
     map_res!(terminated!(preceded!(tag!(b"info1: fileSize "), take_while!(nom::is_digit)), newline), file_size_from_bytes)
+);
+
+fn ignore_from_bytes(_input: &[u8]) -> Result<(), num::ParseIntError> {
+    Ok(())
+}
+
+named!(pub ignore_info1<&[u8], ()>,
+    map_res!(terminated!(preceded!(tag!(b"info1: "), take_till!(is_newline)), newline), ignore_from_bytes)
 );
 
 fn text_from_bytes(input: &[u8]) -> Result<String, str::Utf8Error> {

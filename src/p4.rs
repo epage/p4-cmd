@@ -9,6 +9,7 @@ use chrono::TimeZone;
 use dirs;
 use files;
 use print;
+use sync;
 use where_;
 
 #[derive(Clone, Debug)]
@@ -89,6 +90,49 @@ impl P4 {
     /// ```
     pub fn print<'p, 'f>(&'p self, file: &'f str) -> print::Print<'p, 'f> {
         print::Print::new(self, file)
+    }
+
+    /// Synchronize the client with its view of the depot
+    ///
+    /// Sync updates the client workspace to reflect its current view (if
+    /// it has changed) and the current contents of the depot (if it has
+    /// changed). The client view maps client and depot file names and
+    /// locations.
+    ///
+    /// Sync adds files that are in the client view and have not been
+    /// retrieved before.  Sync deletes previously retrieved files that
+    /// are no longer in the client view or have been deleted from the
+    /// depot.  Sync updates files that are still in the client view and
+    /// have been updated in the depot.
+    ///
+    /// By default, sync affects all files in the client workspace. If file
+    /// arguments are given, sync limits its operation to those files.
+    /// The file arguments can contain wildcards.
+    ///
+    /// If the file argument includes a revision specifier, then the given
+    /// revision is retrieved.  Normally, the head revision is retrieved.
+    ///
+    /// If the file argument includes a revision range specification,
+    /// only files selected by the revision range are updated, and the
+    /// highest revision in the range is used.
+    ///
+    /// See 'p4 help revisions' for help specifying revisions or ranges.
+    ///
+    /// Normally, sync does not overwrite workspace files that the user has
+    /// manually made writable.  Setting the 'clobber' option in the
+    /// client specification disables this safety check.
+    ///
+    /// # Examples
+    ///
+    /// ```rust,no_run
+    /// let p4 = p4_cmd::P4::new();
+    /// let dirs = p4.sync("//depot/dir/*").run().unwrap();
+    /// for dir in dirs {
+    ///     println!("{:?}", dir);
+    /// }
+    /// ```
+    pub fn sync<'p, 'f>(&'p self, file: &'f str) -> sync::Sync<'p, 'f> {
+        sync::Sync::new(self, file)
     }
 
     /// List files in the depot.

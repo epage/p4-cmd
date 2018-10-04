@@ -38,6 +38,7 @@ impl fmt::Display for OperationError {
 pub enum MessageLevel {
     Error,
     Warning,
+    Info,
 
     #[doc(hidden)]
     __Nonexhaustive,

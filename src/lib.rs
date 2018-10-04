@@ -10,4 +10,5 @@ pub mod dirs;
 pub mod error;
 pub mod files;
 pub mod print;
+pub mod sync;
 pub mod where_;

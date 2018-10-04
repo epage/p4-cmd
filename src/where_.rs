@@ -125,7 +125,8 @@ mod where_parser {
     named!(item<&[u8], FileItem>,
         alt!(
             map!(file, data_to_item) |
-            map!(error, error_to_item)
+            map!(error, error_to_item) |
+            map!(info, info_to_item)
         )
     );
 

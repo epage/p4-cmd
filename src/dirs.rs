@@ -178,7 +178,8 @@ mod dirs_parser {
     named!(item<&[u8], super::DirItem>,
         alt!(
             map!(dir_, data_to_item) |
-            map!(error, error_to_item)
+            map!(error, error_to_item) |
+            map!(info, info_to_item)
         )
     );
 
