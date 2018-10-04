@@ -73,7 +73,7 @@ impl<'p, 'f> PrintCommand<'p, 'f> {
 
     /// Run the `print` command.
     pub fn run(self) -> Result<Files, error::P4Error> {
-        let mut cmd = self.connection.connect();
+        let mut cmd = self.connection.connect_with_retries(None);
         cmd.arg("print");
         if self.all_revs {
             cmd.arg("-s");

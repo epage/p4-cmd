@@ -48,7 +48,7 @@ impl<'p, 'f> WhereCommand<'p, 'f> {
 
     /// Run the `where` command.
     pub fn run(self) -> Result<Files, error::P4Error> {
-        let mut cmd = self.connection.connect();
+        let mut cmd = self.connection.connect_with_retries(None);
         cmd.arg("where");
         for file in self.file {
             cmd.arg(file);

@@ -162,7 +162,7 @@ impl<'p, 'f> SyncCommand<'p, 'f> {
 
     /// Run the `sync` command.
     pub fn run(self) -> Result<Files, error::P4Error> {
-        let mut cmd = self.connection.connect();
+        let mut cmd = self.connection.connect_with_retries(None);
         cmd.arg("sync");
         if self.force {
             cmd.arg("-f");

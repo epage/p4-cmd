@@ -94,7 +94,7 @@ impl<'p, 'f, 's> DirsCommand<'p, 'f, 's> {
 
     /// Run the `dirs` command.
     pub fn run(self) -> Result<Dirs, error::P4Error> {
-        let mut cmd = self.connection.connect();
+        let mut cmd = self.connection.connect_with_retries(None);
         cmd.arg("dirs");
         if self.client_only {
             cmd.arg("-C");

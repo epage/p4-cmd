@@ -84,7 +84,7 @@ impl<'p, 'f> FilesCommand<'p, 'f> {
 
     /// Run the `files` command.
     pub fn run(self) -> Result<Files, error::P4Error> {
-        let mut cmd = self.connection.connect();
+        let mut cmd = self.connection.connect_with_retries(None);
         cmd.arg("files");
         if self.list_revisions {
             cmd.arg("-a");

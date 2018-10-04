@@ -19,6 +19,7 @@ pub struct P4 {
     user: Option<String>,
     password: Option<String>,
     client: Option<String>,
+    retries: Option<usize>,
 }
 
 impl P4 {
@@ -29,6 +30,7 @@ impl P4 {
             user: None,
             password: None,
             client: None,
+            retries: None,
         }
     }
 
@@ -62,6 +64,13 @@ impl P4 {
     /// Overrides any P4CLIENT setting with the specified client name.
     pub fn set_client(mut self, client: Option<String>) -> Self {
         self.client = client;
+        self
+    }
+
+    /// Number of times a command should be retried if the network times out (takes longer than N
+    /// seconds to respond to a single I/O operation) during command execution.
+    pub fn set_retries(mut self, retries: Option<usize>) -> Self {
+        self.retries = retries;
         self
     }
 
@@ -235,6 +244,15 @@ impl P4 {
         }
         if let Some(ref client) = self.client {
             cmd.args(&["-c", client.as_str()]);
+        }
+        cmd
+    }
+
+    pub(crate) fn connect_with_retries(&self, retries: Option<usize>) -> process::Command {
+        let mut cmd = self.connect();
+        if let Some(retries) = retries.or(self.retries) {
+            let retries = format!("{}", retries);
+            cmd.args(&["-r", &retries]);
         }
         cmd
     }
