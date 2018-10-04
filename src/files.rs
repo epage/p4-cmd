@@ -27,7 +27,7 @@ use p4;
 /// }
 /// ```
 #[derive(Debug, Clone)]
-pub struct Files<'p, 'f> {
+pub struct FilesCommand<'p, 'f> {
     connection: &'p p4::P4,
     file: Vec<&'f str>,
 
@@ -37,7 +37,7 @@ pub struct Files<'p, 'f> {
     max: Option<usize>,
 }
 
-impl<'p, 'f> Files<'p, 'f> {
+impl<'p, 'f> FilesCommand<'p, 'f> {
     pub fn new(connection: &'p p4::P4, file: &'f str) -> Self {
         Self {
             connection,
@@ -83,7 +83,7 @@ impl<'p, 'f> Files<'p, 'f> {
     }
 
     /// Run the `files` command.
-    pub fn run(self) -> Result<FilesIter, error::P4Error> {
+    pub fn run(self) -> Result<Files, error::P4Error> {
         let mut cmd = self.connection.connect();
         cmd.arg("files");
         if self.list_revisions {
@@ -113,16 +113,27 @@ impl<'p, 'f> Files<'p, 'f> {
                 .set_context(format!("Command: {:?}", cmd))
         })?;
         items.push(exit);
-        Ok(FilesIter(items.into_iter()))
+        Ok(Files(items))
     }
 }
 
 pub type FileItem = error::Item<File>;
 
-#[derive(Debug)]
-pub struct FilesIter(vec::IntoIter<FileItem>);
+pub struct Files(Vec<FileItem>);
 
-impl Iterator for FilesIter {
+impl IntoIterator for Files {
+    type Item = FileItem;
+    type IntoIter = FilesIntoIter;
+
+    fn into_iter(self) -> FilesIntoIter {
+        FilesIntoIter(self.0.into_iter())
+    }
+}
+
+#[derive(Debug)]
+pub struct FilesIntoIter(vec::IntoIter<FileItem>);
+
+impl Iterator for FilesIntoIter {
     type Item = FileItem;
 
     #[inline]

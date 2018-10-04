@@ -44,7 +44,7 @@ use p4;
 /// }
 /// ```
 #[derive(Debug, Clone)]
-pub struct Sync<'p, 'f> {
+pub struct SyncCommand<'p, 'f> {
     connection: &'p p4::P4,
     file: Vec<&'f str>,
 
@@ -57,7 +57,7 @@ pub struct Sync<'p, 'f> {
     parallel: Option<usize>,
 }
 
-impl<'p, 'f> Sync<'p, 'f> {
+impl<'p, 'f> SyncCommand<'p, 'f> {
     pub fn new(connection: &'p p4::P4, file: &'f str) -> Self {
         Self {
             connection: connection,
@@ -161,7 +161,7 @@ impl<'p, 'f> Sync<'p, 'f> {
     }
 
     /// Run the `sync` command.
-    pub fn run(self) -> Result<SyncIter, error::P4Error> {
+    pub fn run(self) -> Result<Files, error::P4Error> {
         let mut cmd = self.connection.connect();
         cmd.arg("sync");
         if self.force {
@@ -202,16 +202,27 @@ impl<'p, 'f> Sync<'p, 'f> {
                 .set_context(format!("Command: {:?}", cmd))
         })?;
         items.push(exit);
-        Ok(SyncIter(items.into_iter()))
+        Ok(Files(items))
     }
 }
 
 pub type FileItem = error::Item<File>;
 
-#[derive(Debug)]
-pub struct SyncIter(vec::IntoIter<FileItem>);
+pub struct Files(Vec<FileItem>);
 
-impl Iterator for SyncIter {
+impl IntoIterator for Files {
+    type Item = FileItem;
+    type IntoIter = FilesIntoIter;
+
+    fn into_iter(self) -> FilesIntoIter {
+        FilesIntoIter(self.0.into_iter())
+    }
+}
+
+#[derive(Debug)]
+pub struct FilesIntoIter(vec::IntoIter<FileItem>);
+
+impl Iterator for FilesIntoIter {
     type Item = FileItem;
 
     #[inline]

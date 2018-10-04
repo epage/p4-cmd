@@ -88,8 +88,8 @@ impl P4 {
     ///     println!("{:?}", file);
     /// }
     /// ```
-    pub fn print<'p, 'f>(&'p self, file: &'f str) -> print::Print<'p, 'f> {
-        print::Print::new(self, file)
+    pub fn print<'p, 'f>(&'p self, file: &'f str) -> print::PrintCommand<'p, 'f> {
+        print::PrintCommand::new(self, file)
     }
 
     /// Synchronize the client with its view of the depot
@@ -131,8 +131,8 @@ impl P4 {
     ///     println!("{:?}", dir);
     /// }
     /// ```
-    pub fn sync<'p, 'f>(&'p self, file: &'f str) -> sync::Sync<'p, 'f> {
-        sync::Sync::new(self, file)
+    pub fn sync<'p, 'f>(&'p self, file: &'f str) -> sync::SyncCommand<'p, 'f> {
+        sync::SyncCommand::new(self, file)
     }
 
     /// List files in the depot.
@@ -158,8 +158,8 @@ impl P4 {
     ///     println!("{:?}", file);
     /// }
     /// ```
-    pub fn files<'p, 'f>(&'p self, file: &'f str) -> files::Files<'p, 'f> {
-        files::Files::new(self, file)
+    pub fn files<'p, 'f>(&'p self, file: &'f str) -> files::FilesCommand<'p, 'f> {
+        files::FilesCommand::new(self, file)
     }
 
     /// List depot subdirectories
@@ -186,8 +186,8 @@ impl P4 {
     ///     println!("{:?}", dir);
     /// }
     /// ```
-    pub fn dirs<'p, 'f, 's>(&'p self, dir: &'f str) -> dirs::Dirs<'p, 'f, 's> {
-        dirs::Dirs::new(self, dir)
+    pub fn dirs<'p, 'f, 's>(&'p self, dir: &'f str) -> dirs::DirsCommand<'p, 'f, 's> {
+        dirs::DirsCommand::new(self, dir)
     }
 
     /// Show how file names are mapped by the client view
@@ -212,8 +212,8 @@ impl P4 {
     ///     println!("{:?}", file);
     /// }
     /// ```
-    pub fn where_<'p, 'f>(&'p self) -> where_::Where<'p, 'f> {
-        where_::Where::new(self)
+    pub fn where_<'p, 'f>(&'p self) -> where_::WhereCommand<'p, 'f> {
+        where_::WhereCommand::new(self)
     }
 
     pub(crate) fn connect(&self) -> process::Command {

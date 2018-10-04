@@ -27,12 +27,12 @@ use p4;
 /// }
 /// ```
 #[derive(Debug, Clone)]
-pub struct Where<'p, 'f> {
+pub struct WhereCommand<'p, 'f> {
     connection: &'p p4::P4,
     file: Vec<&'f str>,
 }
 
-impl<'p, 'f> Where<'p, 'f> {
+impl<'p, 'f> WhereCommand<'p, 'f> {
     pub fn new(connection: &'p p4::P4) -> Self {
         Self {
             connection,
@@ -47,7 +47,7 @@ impl<'p, 'f> Where<'p, 'f> {
     }
 
     /// Run the `where` command.
-    pub fn run(self) -> Result<FileIter, error::P4Error> {
+    pub fn run(self) -> Result<Files, error::P4Error> {
         let mut cmd = self.connection.connect();
         cmd.arg("where");
         for file in self.file {
@@ -65,16 +65,27 @@ impl<'p, 'f> Where<'p, 'f> {
                 .set_context(format!("Command: {:?}", cmd))
         })?;
         items.push(exit);
-        Ok(FileIter(items.into_iter()))
+        Ok(Files(items))
     }
 }
 
 pub type FileItem = error::Item<File>;
 
-#[derive(Debug)]
-pub struct FileIter(vec::IntoIter<FileItem>);
+pub struct Files(Vec<FileItem>);
 
-impl Iterator for FileIter {
+impl IntoIterator for Files {
+    type Item = FileItem;
+    type IntoIter = FilesIntoIter;
+
+    fn into_iter(self) -> FilesIntoIter {
+        FilesIntoIter(self.0.into_iter())
+    }
+}
+
+#[derive(Debug)]
+pub struct FilesIntoIter(vec::IntoIter<FileItem>);
+
+impl Iterator for FilesIntoIter {
     type Item = FileItem;
 
     #[inline]

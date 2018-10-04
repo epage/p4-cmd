@@ -28,7 +28,7 @@ use p4;
 /// }
 /// ```
 #[derive(Debug, Clone)]
-pub struct Dirs<'p, 'f, 's> {
+pub struct DirsCommand<'p, 'f, 's> {
     connection: &'p p4::P4,
     dir: Vec<&'f str>,
 
@@ -39,7 +39,7 @@ pub struct Dirs<'p, 'f, 's> {
     ignore_case: bool,
 }
 
-impl<'p, 'f, 's> Dirs<'p, 'f, 's> {
+impl<'p, 'f, 's> DirsCommand<'p, 'f, 's> {
     pub fn new(connection: &'p p4::P4, dir: &'f str) -> Self {
         Self {
             connection,
@@ -93,7 +93,7 @@ impl<'p, 'f, 's> Dirs<'p, 'f, 's> {
     }
 
     /// Run the `dirs` command.
-    pub fn run(self) -> Result<DirsIter, error::P4Error> {
+    pub fn run(self) -> Result<Dirs, error::P4Error> {
         let mut cmd = self.connection.connect();
         cmd.arg("dirs");
         if self.client_only {
@@ -126,16 +126,27 @@ impl<'p, 'f, 's> Dirs<'p, 'f, 's> {
                 .set_context(format!("Command: {:?}", cmd))
         })?;
         items.push(exit);
-        Ok(DirsIter(items.into_iter()))
+        Ok(Dirs(items))
     }
 }
 
 pub type DirItem = error::Item<Dir>;
 
-#[derive(Debug)]
-pub struct DirsIter(vec::IntoIter<DirItem>);
+pub struct Dirs(Vec<DirItem>);
 
-impl Iterator for DirsIter {
+impl IntoIterator for Dirs {
+    type Item = DirItem;
+    type IntoIter = DirsIntoIter;
+
+    fn into_iter(self) -> DirsIntoIter {
+        DirsIntoIter(self.0.into_iter())
+    }
+}
+
+#[derive(Debug)]
+pub struct DirsIntoIter(vec::IntoIter<DirItem>);
+
+impl Iterator for DirsIntoIter {
     type Item = DirItem;
 
     #[inline]
