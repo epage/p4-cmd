@@ -21,7 +21,7 @@ use p4;
 ///
 /// ```rust,no_run
 /// let p4 = p4_cmd::P4::new();
-/// let files = p4.where_().file("//depot/dir/*").run();
+/// let files = p4.where_().file("//depot/dir/*").run().unwrap();
 /// for file in files {
 ///     println!("{:?}", file);
 /// }
@@ -47,16 +47,25 @@ impl<'p, 'f> Where<'p, 'f> {
     }
 
     /// Run the `where` command.
-    pub fn run(self) -> FileIter {
+    pub fn run(self) -> Result<FileIter, error::P4Error> {
         let mut cmd = self.connection.connect();
         cmd.arg("where");
         for file in self.file {
             cmd.arg(file);
         }
-        let data = cmd.output().unwrap();
-        let (_remains, (mut items, exit)) = where_parser::where_(&data.stdout).unwrap();
+        let data = cmd.output().map_err(|e| {
+            error::ErrorKind::SpawnFailed
+                .error()
+                .set_cause(e)
+                .set_context(format!("Command: {:?}", cmd))
+        })?;
+        let (_remains, (mut items, exit)) = where_parser::where_(&data.stdout).map_err(|_| {
+            error::ErrorKind::ParseFailed
+                .error()
+                .set_context(format!("Command: {:?}", cmd))
+        })?;
         items.push(exit);
-        FileIter(items.into_iter())
+        Ok(FileIter(items.into_iter()))
     }
 }
 

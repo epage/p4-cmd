@@ -21,7 +21,7 @@ use p4;
 ///
 /// ```rust,no_run
 /// let p4 = p4_cmd::P4::new();
-/// let files = p4.files("//depot/dir/*").run();
+/// let files = p4.files("//depot/dir/*").run().unwrap();
 /// for file in files {
 ///     println!("{:?}", file);
 /// }
@@ -83,7 +83,7 @@ impl<'p, 'f> Files<'p, 'f> {
     }
 
     /// Run the `files` command.
-    pub fn run(self) -> FilesIter {
+    pub fn run(self) -> Result<FilesIter, error::P4Error> {
         let mut cmd = self.connection.connect();
         cmd.arg("files");
         if self.list_revisions {
@@ -101,10 +101,19 @@ impl<'p, 'f> Files<'p, 'f> {
         for file in self.file {
             cmd.arg(file);
         }
-        let data = cmd.output().unwrap();
-        let (_remains, (mut items, exit)) = files_parser::files(&data.stdout).unwrap();
+        let data = cmd.output().map_err(|e| {
+            error::ErrorKind::SpawnFailed
+                .error()
+                .set_cause(e)
+                .set_context(format!("Command: {:?}", cmd))
+        })?;
+        let (_remains, (mut items, exit)) = files_parser::files(&data.stdout).map_err(|_| {
+            error::ErrorKind::ParseFailed
+                .error()
+                .set_context(format!("Command: {:?}", cmd))
+        })?;
         items.push(exit);
-        FilesIter(items.into_iter())
+        Ok(FilesIter(items.into_iter()))
     }
 }
 

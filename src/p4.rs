@@ -70,7 +70,7 @@ impl P4 {
     ///
     /// ```rust,no_run
     /// let p4 = p4_cmd::P4::new();
-    /// let files = p4.print("//depot/dir/file").run();
+    /// let files = p4.print("//depot/dir/file").run().unwrap();
     /// for file in files {
     ///     println!("{:?}", file);
     /// }
@@ -97,7 +97,7 @@ impl P4 {
     ///
     /// ```rust,no_run
     /// let p4 = p4_cmd::P4::new();
-    /// let files = p4.files("//depot/dir/*").run();
+    /// let files = p4.files("//depot/dir/*").run().unwrap();
     /// for file in files {
     ///     println!("{:?}", file);
     /// }
@@ -125,7 +125,7 @@ impl P4 {
     ///
     /// ```rust,no_run
     /// let p4 = p4_cmd::P4::new();
-    /// let dirs = p4.dirs("//depot/dir/*").run();
+    /// let dirs = p4.dirs("//depot/dir/*").run().unwrap();
     /// for dir in dirs {
     ///     println!("{:?}", dir);
     /// }
@@ -151,7 +151,7 @@ impl P4 {
     ///
     /// ```rust,no_run
     /// let p4 = p4_cmd::P4::new();
-    /// let files = p4.where_().file("//depot/dir/*").run();
+    /// let files = p4.where_().file("//depot/dir/*").run().unwrap();
     /// for file in files {
     ///     println!("{:?}", file);
     /// }

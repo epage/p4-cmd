@@ -22,7 +22,7 @@ use p4;
 ///
 /// ```rust,no_run
 /// let p4 = p4_cmd::P4::new();
-/// let dirs = p4.dirs("//depot/dir/*").run();
+/// let dirs = p4.dirs("//depot/dir/*").run().unwrap();
 /// for dir in dirs {
 ///     println!("{:?}", dir);
 /// }
@@ -93,7 +93,7 @@ impl<'p, 'f, 's> Dirs<'p, 'f, 's> {
     }
 
     /// Run the `dirs` command.
-    pub fn run(self) -> DirsIter {
+    pub fn run(self) -> Result<DirsIter, error::P4Error> {
         let mut cmd = self.connection.connect();
         cmd.arg("dirs");
         if self.client_only {
@@ -114,10 +114,19 @@ impl<'p, 'f, 's> Dirs<'p, 'f, 's> {
         for dir in self.dir {
             cmd.arg(dir);
         }
-        let data = cmd.output().unwrap();
-        let (_remains, (mut items, exit)) = dirs_parser::dirs(&data.stdout).unwrap();
+        let data = cmd.output().map_err(|e| {
+            error::ErrorKind::SpawnFailed
+                .error()
+                .set_cause(e)
+                .set_context(format!("Command: {:?}", cmd))
+        })?;
+        let (_remains, (mut items, exit)) = dirs_parser::dirs(&data.stdout).map_err(|_| {
+            error::ErrorKind::ParseFailed
+                .error()
+                .set_context(format!("Command: {:?}", cmd))
+        })?;
         items.push(exit);
-        DirsIter(items.into_iter())
+        Ok(DirsIter(items.into_iter()))
     }
 }
 

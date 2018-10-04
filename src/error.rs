@@ -87,3 +87,93 @@ impl<T> Item<T> {
         }
     }
 }
+
+type ErrorCause = Error + Send + Sync + 'static;
+
+/// For programmatically processing failures.
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub enum ErrorKind {
+    SpawnFailed,
+    ParseFailed,
+}
+
+impl ErrorKind {
+    pub(crate) fn error(self) -> P4Error {
+        P4Error::new(self)
+    }
+}
+
+impl fmt::Display for ErrorKind {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            ErrorKind::SpawnFailed => write!(f, "Failed to launch P4 command."),
+            ErrorKind::ParseFailed => write!(f, "Failed to parse P4 output."),
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct P4Error {
+    kind: ErrorKind,
+    context: Option<String>,
+    cause: Option<Box<ErrorCause>>,
+}
+
+impl P4Error {
+    pub(crate) fn new(kind: ErrorKind) -> Self {
+        Self {
+            kind,
+            context: None,
+            cause: None,
+        }
+    }
+
+    pub(crate) fn set_context<S>(mut self, context: S) -> Self
+    where
+        S: Into<String>,
+    {
+        let context = context.into();
+        self.context = Some(context);
+        self
+    }
+
+    pub(crate) fn set_cause<E>(mut self, cause: E) -> Self
+    where
+        E: Error + Send + Sync + 'static,
+    {
+        let cause = Box::new(cause);
+        self.cause = Some(cause);
+        self
+    }
+
+    /// Programmtically process failure.
+    pub fn kind(&self) -> ErrorKind {
+        self.kind
+    }
+}
+
+impl Error for P4Error {
+    fn description(&self) -> &str {
+        "Staging failed."
+    }
+
+    fn cause(&self) -> Option<&Error> {
+        self.cause.as_ref().map(|c| {
+            let c: &Error = c.as_ref();
+            c
+        })
+    }
+}
+
+impl fmt::Display for P4Error {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        writeln!(f, "Operation failed: {}", self.kind)?;
+        if let Some(ref context) = self.context {
+            writeln!(f, "{}", context)?;
+        }
+        if let Some(ref cause) = self.cause {
+            writeln!(f, "Cause: {}", cause)?;
+        }
+        Ok(())
+    }
+}
