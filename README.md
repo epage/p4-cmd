@@ -25,6 +25,12 @@ Now you can use the crate in your code:
 extern crate p4_cmd;
 ```
 
+**Note**: This requires the `p4` binary to be available.
+
+Why wrap the `p4` binary rather than the API?
+- The API is in C++ and would require first wrapping in C.
+- The API would not be `Sync`, requiring more work to have a `Sync` API.
+
 ## License
 
 Licensed under either of
