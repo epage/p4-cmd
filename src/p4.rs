@@ -1,4 +1,5 @@
 use std::fmt;
+use std::path;
 use std::process;
 use std::str;
 
@@ -12,6 +13,7 @@ use where_;
 
 #[derive(Clone, Debug)]
 pub struct P4 {
+    custom_p4: Option<path::PathBuf>,
     port: Option<String>,
     user: Option<String>,
     password: Option<String>,
@@ -21,11 +23,21 @@ pub struct P4 {
 impl P4 {
     pub fn new() -> Self {
         Self {
+            custom_p4: None,
             port: None,
             user: None,
             password: None,
             client: None,
         }
+    }
+
+    /// Overrides the `p4` command used.
+    ///
+    /// This is useful for "portable" installs (not in system path) and performance (caching the
+    /// `PATH` lookup via `where` crate).
+    pub fn set_p4_cmd(mut self, custom_p4: Option<path::PathBuf>) -> Self {
+        self.custom_p4 = custom_p4;
+        self
     }
 
     /// Overrides any P4PORT setting with the specified protocol:host:port.
@@ -161,7 +173,8 @@ impl P4 {
     }
 
     pub(crate) fn connect(&self) -> process::Command {
-        let mut cmd = process::Command::new("p4");
+        let p4_cmd = self.custom_p4.as_ref().map(path::PathBuf::as_path).unwrap_or(path::Path::new("p4"));
+        let mut cmd = process::Command::new(p4_cmd);
         cmd.args(&["-Gs", "-C utf8"]);
         if let Some(ref port) = self.port {
             cmd.args(&["-p", port.as_str()]);
