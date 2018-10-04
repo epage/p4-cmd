@@ -83,7 +83,7 @@ impl<'p, 'f> Print<'p, 'f> {
         }
         if let Some(max_files) = self.max_files {
             let max_files = format!("{}", max_files);
-            cmd.args(&["-S", &max_files]);
+            cmd.args(&["-m", &max_files]);
         }
         for file in self.file {
             cmd.arg(file);
