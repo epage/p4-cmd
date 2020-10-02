@@ -464,6 +464,8 @@ pub struct FileTypeModifiers {
     pub executable: bool,
     /// RCS keyword expansion
     pub rcs_expansion: bool,
+    /// Old-style keyword expansion
+    pub old_style_expansion: bool,
     /// Exclusive open (locking)
     pub exclusive: bool,
     /// Perforce stores the full compressed version of each file revision
@@ -500,6 +502,7 @@ impl str::FromStr for FileTypeModifiers {
                 'w' => modifiers.always_writeable = true,
                 'x' => modifiers.executable = true,
                 'k' => modifiers.rcs_expansion = true,
+                'o' => modifiers.old_style_expansion = true,
                 'l' => modifiers.exclusive = true,
                 'C' => modifiers.full = true,
                 'D' => modifiers.deltas = true,
@@ -526,6 +529,9 @@ impl fmt::Display for FileTypeModifiers {
         }
         if self.rcs_expansion {
             write!(f, "k")?;
+        }
+        if self.old_style_expansion {
+            write!(f, "o")?;
         }
         if self.exclusive {
             write!(f, "l")?;
