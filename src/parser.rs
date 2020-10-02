@@ -68,10 +68,12 @@ pub struct Newline;
 
 named!(pub newline<&[u8], Newline>,
     alt!(
-        value!(Newline, tag!(b"\n")) |
-        value!(Newline, tag!(b"\r")) |
+        // NOTE: The "\r\n" parser has to be before "\r",
+        // otherwise Windows newlines will match on "\r",
+        // and the \n will not be consumed by the parser.
         value!(Newline, tag!(b"\r\n")) |
-        value!(Newline, tag!(b"\n\r"))
+        value!(Newline, tag!(b"\n")) |
+        value!(Newline, tag!(b"\r"))
     )
 );
 
@@ -414,6 +416,15 @@ mod test {
         assert_eq!(
             file_size(b"info1: fileSize 42\n"),
             Ok((expected_remaining, FileSize { size: 42 }))
+        );
+    }
+
+    #[test]
+    fn parse_windows_newline() {
+        let expected_remaining: &[u8] = b"";
+        assert_eq!(
+            exit(b"exit: 0\r\n"),
+            Ok((expected_remaining, Exit { code: 0 }))
         );
     }
 }
